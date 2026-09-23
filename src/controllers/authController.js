@@ -1,17 +1,24 @@
 import { prisma } from "../config/db.js";
+import bcrypt from "bcryptjs";
+
+const SALT_ROUNDS = 12;
 
 const register = async (req, res) => {
-    const { username, name, email, password } = req.body;
+    const { username, name, email, inputPassword } = req.body;
 
-    if (!username || !name || !email || !password) {
+    if (!username || !name || !email || !inputPassword) {
         return res.status(400).json({ error: "Missing user data for registering" });
     }
 
     try {
-        const user = prisma.user.create({
+        const salt = bcrypt.genSalt(SALT_ROUNDS);
+        const hashedPassword = bcrypt.hash(inputPassword, salt);
+
+        const user = await prisma.user.create({
             data: username,
             name,
-            email, //colocar hash
+            email,
+            password: hashedPassword,
         });
 
         return res.status(201).json({ id: user.id, username: user.username });
@@ -28,4 +35,21 @@ const register = async (req, res) => {
     }
 };
 
-export { register };
+const login = async (req, res) => {
+    const { email, inputPassword } = req.body;
+
+    const user = prisma.user.findUnique({
+        where: { email: email },
+    });
+
+    if (!user) {
+        return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const passwordIsValid = bcrypt.compare(inputPassword, user.password);
+    if (!passwordIsValid) {
+        return res.status(401).json({ error: "Invalid email or password" });
+    }
+};
+
+export { register, login };
