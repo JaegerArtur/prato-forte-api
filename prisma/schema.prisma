@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id         String @id @default(uuid())
+  username   String @unique
+  name       String
+  password   String
+  email      String @unique
+  created_at DateTime @default(now())
+
+  exercises Exercise[]
+  sessions Session[]
+
+  @@map("user")
+}
+
+model Exercise {
+  id          String @id @default(uuid())
+  user_id     String? // If not null, it's a custom exercise
+  name        String
+  description String?
+  image       String?
+  created_at  DateTime @default(now())
+  deleted_at  DateTime?
+
+  sessions Session_Exercise[]
+  muscular_groups Exercise_Muscular_group[]
+
+  user_exercise User? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("exercise")
+}
+
+model Session {
+  id          String @id @default(uuid())
+  user_id     String
+  started_at  DateTime?
+  finished_at DateTime?
+  created_at  DateTime @default(now())
+  deleted_at  DateTime?
+
+  exercises Session_Exercise[]
+
+  user_session User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("session")
+}
+
+model Muscular_group {
+  id   Int @id @default(autoincrement())
+  name String @unique
+
+  exercises Exercise_Muscular_group[]
+
+  @@map("muscular_group")
+}
+
+model Session_Exercise {
+  id          String @id @default(uuid())
+  session_id  String
+  exercise_id String
+  set_number  Int?
+  reps_amount Int?
+  duration    Float? // seconds
+  weight      Float?
+  rpe         Int?
+
+  session_ext Session @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  exercise_ext Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id, exercise_id])
+  @@map("session_exercise")
+}
+
+model Exercise_Muscular_group {
+  exercise_id String
+  muscular_id Int
+
+  @@id([exercise_id, muscular_id])
+
+  exercise_ext Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+  muscular_ext Muscular_group @relation(fields: [muscular_id], references: [id])
+
+  @@map("exercise_muscular_group")
+}
