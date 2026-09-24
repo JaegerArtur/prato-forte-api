@@ -17,10 +17,8 @@ app.use(express.json());
 // API Routes
 app.use("/auth", authRoutes);
 
-const PORT = 5001;
-
-app.listen(PORT, () => {
-    console.log(`Server running on port: ${PORT}`);
+const server = app.listen(process.env.PORT || 5001, () => {
+    console.log(`Server running on port: ${process.env.PORT || 5001}`);
 });
 
 // Handle unhandled promise rejections (e.g., database connection errors)
