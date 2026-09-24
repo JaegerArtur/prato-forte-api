@@ -11,14 +11,11 @@ const register = async (req, res) => {
     }
 
     try {
-        const salt = bcrypt.genSalt(SALT_ROUNDS);
-        const hashedPassword = bcrypt.hash(inputPassword, salt);
+        const salt = await bcrypt.genSalt(SALT_ROUNDS);
+        const hashedPassword = await bcrypt.hash(inputPassword, salt);
 
         const user = await prisma.user.create({
-            data: username,
-            name,
-            email,
-            password: hashedPassword,
+            data: { username, name, email, password: hashedPassword },
         });
 
         return res.status(201).json({ id: user.id, username: user.username });
