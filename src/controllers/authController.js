@@ -1,6 +1,8 @@
 import { prisma } from "../config/db.js";
 import bcrypt from "bcryptjs";
 
+import { generateToken } from "../utils/generateToken.js";
+
 const SALT_ROUNDS = 12;
 
 const register = async (req, res) => {
@@ -35,7 +37,8 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     const { email, inputPassword } = req.body;
 
-    const user = prisma.user.findUnique({
+    // Verify if the email is registered
+    const user = await prisma.user.findUnique({
         where: { email: email },
     });
 
@@ -43,10 +46,17 @@ const login = async (req, res) => {
         return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    const passwordIsValid = bcrypt.compare(inputPassword, user.password);
+    // Compare passwords if the email is registered
+    const passwordIsValid = await bcrypt.compare(inputPassword, user.password);
+
     if (!passwordIsValid) {
         return res.status(401).json({ error: "Invalid email or password" });
     }
+
+    // Generate JWT Token
+    const token = generateToken(user.id, res);
+
+    return res.status(201).json({ user: { id: user.id, username: user.username }, token });
 };
 
 export { register, login };
