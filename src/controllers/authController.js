@@ -9,7 +9,7 @@ const register = async (req, res) => {
     const { username, name, email, inputPassword } = req.body;
 
     if (!username || !name || !email || !inputPassword) {
-        return res.status(400).json({ error: "Missing user data for registering" });
+        return res.status(409).json({ error: "Missing user data for registering" });
     }
 
     try {
@@ -20,7 +20,7 @@ const register = async (req, res) => {
             data: { username, name, email, password: hashedPassword },
         });
 
-        return res.status(201).json({ id: user.id, username: user.username });
+        return res.status(201).json({ id: user.id, username: user.username, email: user.email });
     } catch (error) {
         // P2002 = "This operation would violate an unique constraint"
         if (error.code === "P2002") {
