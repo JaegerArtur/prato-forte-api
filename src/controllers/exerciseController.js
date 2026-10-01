@@ -1,12 +1,65 @@
 import { prisma } from "../config/db.js";
 
-// GET
+// GET (many)
+const getExercises = async (req, res) => {
+    const userId = req.userId
+    if (!userId) {
+        return res.status(401).json({ error: "User not authenticated"})
+    }
+
+    const { updatedSince } = req.query
+
+    const updatedAt = new Date(updatedSince)
+
+    const exercises = await prisma.exercise.findMany({
+        where: {
+            OR: [
+                {user_id: null},
+                {user_id: userId}
+            ],
+            updated_at: {gt: updatedAt}
+        }
+    })
+
+    return res.status(200).json(exercises)
+}
+
+
+// GET (unique item)
+const getExercise = async (req, res) => {
+    const userId = req.userId
+    const { exerciseName } = req.query
+
+    if (!userId) {
+        return res.status(401).json({ error: "User not authenticated"})
+    }
+
+    try {
+        const exercise = await prisma.exercise.findUnique({
+            where: { 
+                name: exerciseName,
+                OR: [
+                    {user_id: null},
+                    {user_id: userId}
+                ]
+            }
+        })
+
+        if (exercise === null) {
+            return res.status(404).json({ message: "Exercise not found" })
+        }
+
+    } catch (err) {
+        return res.status(500).json({ error: "Internal server error"})
+    }
+}
+
 
 // CREATE
 const createExercise = async (req, res) => {
-    const { name, userId, muscularGroups, image, description } = req.body;
+    const { name, muscularGroups, image, description } = req.body;
 
-    if (!name || !userId || !muscularGroups) {
+    if (!name || !muscularGroups) {
         return res.status(409).json({ error: "Missing exercise data for registering" });
     }
 
@@ -19,7 +72,8 @@ const createExercise = async (req, res) => {
 
     if (foundGroups.length !== uniqueGroups.length) {
         const foundNames = new Set(foundGroups.map((g) => g.name));
-        const missingNames = uniqueGroups.filter((name) => !foundNames.has(name));
+        const missingNames = uniqueGroups.f
+        ilter((name) => !foundNames.has(name));
 
         return res.status(400).json({ error: `Invalid muscular group name(s): ${missingNames.join(", ")}` });
     }
@@ -28,7 +82,7 @@ const createExercise = async (req, res) => {
         const newExercise = await prisma.exercise.create({
             data: {
                 name,
-                user_id: userId,
+                user_id: req.userId,
                 description,
                 image,
                 muscular_groups: {
@@ -67,7 +121,9 @@ const createExercise = async (req, res) => {
     }
 };
 
+
 // DELETE
+
 
 // UPDATE
 
