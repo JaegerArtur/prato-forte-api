@@ -1,21 +1,21 @@
-import { create, getAll, getByName } from "../services/exerciseService.js";
+import { create, getAll, getByName, remove, update } from "../services/exerciseService.js";
 
-// GET (unique item)
-const getExercise = async (req, res) => {
+// GET (one)
+export const getExercise = async (req, res) => {
     const exercise = await getByName(req.query.name, req.userId);
 
     return res.status(200).json(exercise);
 };
 
 // GET (many)
-const getExercises = async (req, res) => {
+export const getExercises = async (req, res) => {
     const exercises = await getAll(req.userId, req.query.updatedSince);
 
     return res.status(200).json(exercises);
 };
 
 // CREATE
-const createExercise = async (req, res) => {
+export const createExercise = async (req, res) => {
     const { name, muscularGroups, image, description } = req.body;
 
     const newExercise = await create(name, req.userId, description, image, muscularGroups);
@@ -24,12 +24,17 @@ const createExercise = async (req, res) => {
 };
 
 // DELETE
-const deleteExercise = async (req, res) => {
-    await delete (req.query.exerciseId, req.userId);
+export const deleteExercise = async (req, res) => {
+    await remove(req.params.exerciseId, req.userId);
 
     return res.status(204).send();
 };
 
 // UPDATE
+export const updateExercise = async (req, res) => {
+    const { name, description, image } = req.body;
 
-export { getExercise, getExercises, createExercise };
+    const exercise = await update(req.params.id, req.userId, { name, description, image });
+
+    return res.status(200).json(exercise);
+};

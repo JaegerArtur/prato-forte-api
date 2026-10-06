@@ -87,5 +87,32 @@ export const restore = async (id, { description, image, muscularGroupsIds }) => 
 };
 
 // DELETE
+export const remove = async (id, userId) => {
+    return prisma.exercise.updateMany({
+        where: { id, user_id: userId, deleted_at: null },
+        data: {
+            deleted_at: new Date(),
+        },
+    });
+};
 
 // UPDATE
+export const update = async (id, userId, data) => {
+    return prisma.exercise.update({
+        where: { id, user_id: userId, deleted_at: null },
+        data,
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            image: true,
+            muscular_groups: {
+                select: {
+                    muscular_ext: {
+                        select: { name: true },
+                    },
+                },
+            },
+        },
+    });
+};

@@ -54,5 +54,25 @@ export const create = async (name, userId, description, image, muscularGroupName
 };
 
 // DELETE
+export const remove = async (id, userId) => {
+    const removed = await exerciseRepository.remove(id, userId);
+
+    if (removed.count === 0) {
+        throw new NotFoundError("Exercise not found");
+    }
+};
 
 // UPDATE
+export const update = async (id, userId, data) => {
+    try {
+        return await exerciseRepository.update(id, userId, data);
+    } catch (err) {
+        if (err.code === "P2025") {
+            throw new NotFoundError("Exercise not found");
+        }
+        if (err.code === "P2002") {
+            throw new ConflictError("You already have an exercise with this name");
+        }
+        throw err;
+    }
+};
