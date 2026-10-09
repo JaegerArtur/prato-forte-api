@@ -1,19 +1,19 @@
 import express from "express";
-import { createExercise, deleteExercise, getExercise, getExercises, updateExercise } from "../controllers/exerciseController.js";
+import * as exerciseController from "../controllers/exerciseController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.use(authMiddleware);
 
-router.get("/?updatedSince", getExercises);
+router.get("/?updatedSince", exerciseController.getExercises);
 
-router.get("/:name", getExercise);
+router.get("/:name", exerciseController.getExercise);
 
-router.post("/", createExercise);
+router.post("/", exerciseController.createExercise);
 
-router.delete("/:id", deleteExercise);
+router.delete("/:id", exerciseController.deleteExercise);
 
-router.put("/:id", updateExercise);
+router.put("/:id", exerciseController.updateExercise);
 
 export default router;

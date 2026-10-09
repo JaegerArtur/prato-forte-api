@@ -1,5 +1,5 @@
 import { ConflictError, NotFoundError, ValidationError } from "../errors/AppError";
-import "../repositories/exerciseRepository.js";
+import * as exerciseRepository from "../repositories/exerciseRepository.js";
 
 // GET (one)
 export const getByName = async (name, userId) => {
